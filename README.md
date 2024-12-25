@@ -7,11 +7,11 @@ NetMon will help monitor system information for different computers over the net
 
 A server is the endpoint that receives system information from clients, and relay them to clients authorized for viewing the said system information
 
-## Client 1 (Informer)
+## Informer
 
 Sends system Information to the server at an interval. Informer receives a unique code after initial setup, this will be sent with each system information payload to verify the identity of client.
 
-## Client 2 (Overseer)
+## Overseer
 
 Receives System information from the server at an interval after authentication. The server then keeps the connection in memory and sends information about all the connected clients at an interval. If connection is lost, the socket is discarded and the overseer will need to re-authenticate.
 
