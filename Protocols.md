@@ -6,10 +6,9 @@
 ```
  PTYPE
    1 Byte     32 Bytes       16 Bytes   32 Bytes      1 Byte        8 bytes
-| 00000000 | Computer Name | Platform | CPU Model | Num Of Cores | Storage (GB) |
-| Remaining Null Bytes |
----------------------------------------------------------------------------------
-								   128 Bytes
+| 00000000 | Computer Name | Platform | CPU Model | Num Of Cores | Storage (GB) | Remaining Null Bytes |
+---------------------------------------------------------------------------------------------------------
+                                                128 Bytes
 
 ```
 
