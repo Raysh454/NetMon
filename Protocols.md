@@ -5,10 +5,10 @@
 #### Client Request
 ```
  PTYPE
-   1 Byte     32 Bytes       16 Bytes   32 Bytes      1 Byte        8 bytes
-| 00000000 | Computer Name | Platform | CPU Model | Num Of Cores | Storage (GB) | Remaining Null Bytes |
----------------------------------------------------------------------------------------------------------
-                                                128 Bytes
+   1 Byte     32 Bytes       16 Bytes   32 Bytes      1 Byte         2 bytes             2 bytes           8 bytes
+| 00000000 | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
+-----------------------------------------------------------------------------------------------------------------------------------------------
+                                                               128 Bytes
 
 ```
 
@@ -17,7 +17,7 @@
     PTYPE    Error Code
             0 = No error
    1 Byte      1 Byte        32 Byte          Remaining
-| 00000001 |  00000000  | Unique Code | Null * (128 - size of previous sections)|
+| 00000001 |  00000000  | Informer_ID | Null * (128 - size of previous sections)|
 ---------------------------------------------------------------------------------
 								                  128 Bytes
 ```
@@ -28,7 +28,7 @@
 ```
    PTYPE
    1 Byte      32 Bytes     
-| 00000010 | Unique Code | CPU Usage | Memory Usage | Network Usage | Disk Used(GB) |  Remaining Null Bytes |
+| 00000010 | Unique Code | CPU Usage | Memory Usage | Network Usage | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
 -------------------------------------------------------------------------------------------------------------
                                 128 Bytes
 ```
@@ -43,3 +43,4 @@
 ----------------------------------------------------------
                                128 Bytes
 ```
+- If Acknowledge byte is 0: it means the response was corrupted(or something idk)

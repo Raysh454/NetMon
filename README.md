@@ -9,7 +9,7 @@ A server is the endpoint that receives system information from clients, and rela
 
 ## Informer
 
-Sends system Information to the server at an interval. Informer receives a unique code after initial setup, this will be sent with each system information payload to verify the identity of client.
+Sends system Information to the server at an interval. Informer receives a unique code (called `Informer_ID`) after initial setup, this will be sent with each system information payload to verify the identity of client.
 
 ## Overseer
 
