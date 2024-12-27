@@ -27,10 +27,10 @@
 
 ```
    PTYPE
-   1 Byte      32 Bytes     
-| 00000010 | Unique Code | CPU Usage | Memory Usage | Network Usage | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
--------------------------------------------------------------------------------------------------------------
-                                128 Bytes
+   1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
+| 00000010 | Unique Code | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                             1128 Bytes
 ```
 
 #### Server Response
