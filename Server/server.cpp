@@ -187,7 +187,9 @@ private:
     }
 
     void handle_system_info(int client_socket, char* buffer) {
-
+        uint8_t error_bit = 0x00;
+        uint8_t ack_bit = 0x01;
+        std::string error_msg = "";
 
         uint64_t memory_usage,network_upload, network_download, disk_used, cpu_usage;
         std::string informer_id(buffer + 1, 32);
@@ -210,13 +212,23 @@ private:
             if (informers.find(informer_id) != informers.end()) {
                 informers[informer_id].update_usage(cpu_usage, memory_usage, network_upload, network_download, disk_used);
                 informers[informer_id].usage_to_lendian();
+            } else if (informers.find(informer_id) == informers.end()) {
+                std::cout << "Error: ID Not Found" << std::endl;
+                std::cout << "System Informaton not updated" << std::endl;
+                error_bit = 0x01;
+                ack_bit = 0x00;
+                error_msg = "Error: ID Not Found";
             }
+
         }
 
         char response[BUFFER_SIZE] = {0};
         response[0] = 0x11;
-        response[1] = 0x00;
-        response[2] = 0x01;
+        response[1] = error_bit;
+        response[2] = ack_bit;
+        if (error_msg.size() && error_msg.size() <= 32) {
+            memcpy(response + 3, error_msg.c_str(), error_msg.size());
+        }
         send(client_socket, response, BUFFER_SIZE, 0);
         std::cout << "Received System Usage Information" << std::endl;
         informers[informer_id].display_system_usage();
@@ -225,13 +237,14 @@ private:
 
     std::string generate_random_id() {
         const std::string characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        std::random_device rd;  // Random device to seed the generator
-        std::mt19937 gen(rd());  // Mersenne Twister random number generator
-        std::uniform_int_distribution<> dis(0, characters.size() - 1);  // Distribution to pick index
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, characters.size() - 1);
 
         std::string id;
+        id.reserve(32);
         for (int i = 0; i < 32; ++i) {
-            id += characters[dis(gen)];  // Pick a random character from the set
+            id += characters[dis(gen)];
         }
 
         return id;
