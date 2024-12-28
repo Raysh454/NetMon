@@ -92,4 +92,4 @@ When a new informer connects, this is sent to all overseers for that informer.
                                                              128 Bytes
 ```
 
-The server updates all overseers of system usage information for an informer, when it is sent by the informer.
+The server updates all overseers of system usage information for an informer, periodically
