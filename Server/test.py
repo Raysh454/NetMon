@@ -38,7 +38,7 @@ def send_informer_init(sock):
     sock.sendall(packet)
 
 def send_system_info(sock, informer_id):
-    packet_type = 0x10
+    packet_type = 0b10
     cpu_usage = 20
     memory_usage = 8  # 8 GB in bytes
     network_upload = 500  # 500 MB in bytes
