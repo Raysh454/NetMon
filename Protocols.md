@@ -56,7 +56,7 @@
                                                              128 Bytes
 ```
 
-## Server Response to Overseer
+## Server Response to Overseer (Valid Password)
 
 ```
  PTYPE
@@ -67,3 +67,29 @@
 ```
 
 This is sent to overseers for all connected informers when the overseer first connects.
+When a new informer connects, this is sent to all overseers for that informer.
+
+
+## Server Response to Overseer (Error Authenticating)
+
+
+```
+    PTYPE   Error Code 
+    1 Byte    1 Byte       32 Bytes
+| 00000110 | 00000000 | Error Message | Remaining Null Bytes |
+
+---------------------------------------------------------------
+                               128 Bytes
+```
+
+## Server Payload to overseer updating system usage
+
+```
+   PTYPE
+   1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
+| 00000111 | Unique Code | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                             128 Bytes
+```
+
+The server updates all overseers of system usage information for an informer, when it is sent by the informer.
