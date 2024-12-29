@@ -28,7 +28,7 @@
 ```
    PTYPE
    1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
-| 00000010 | Unique Code | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+| 00000010 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                              128 Bytes
 ```
@@ -61,13 +61,13 @@
 ```
  PTYPE
    1 Byte     32 Bytes      32 Bytes      16 Bytes   32 Bytes      1 Byte         2 bytes             2 bytes           8 bytes
-| 00000101 | Unique ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
+| 00000101 | Informer_ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
 -----------------------------------------------------------------------------------------------------------------------------------------------
                                                                128 Bytes
 ```
 
-This is sent to overseers for all connected informers when the overseer first connects.
-When a new informer connects, this is sent to all overseers for that informer.
+- This is sent to overseers for all connected informers when the overseer first connects.
+- When a new informer connects, this is sent to all overseers for that informer.
 
 
 ## Server Response to Overseer (Error Authenticating)
@@ -87,9 +87,41 @@ When a new informer connects, this is sent to all overseers for that informer.
 ```
    PTYPE
    1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
-| 00000111 | Unique Code | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+| 00000111 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                              128 Bytes
 ```
 
-The server updates all overseers of system usage information for an informer, periodically
+- The server updates all overseers of system usage information for an informer, periodically
+
+## Server Alerting Overseer of an Informer timeout
+
+```
+   PTYPE
+  1 Bytes      32 Bytes     32 Bytes      
+| 00001000 | Informer_ID |   Reason   | Remaining Null Bytes |
+--------------------------------------------------------------
+                      128 Bytes
+```
+
+## Server Check Whether Overseer Is Active or Not
+
+```
+  PTYPE
+  1 Byte
+| 00001001 | Remaining Null Bytes |
+-----------------------------------
+           128 Bytes
+```
+
+## Overseer Response if Active
+
+```
+   PTYPE
+   1 Byte
+| 00001010 | Remaining Null Bytes |
+-----------------------------------
+            128 Bytes
+```
+
+- If No response is received overseer is removed from clients.
