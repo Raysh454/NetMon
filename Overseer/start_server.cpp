@@ -122,6 +122,6 @@ public:
 
 int main() {
     Overseer overseer;
-    overseer.run();
+    overseer.run(); //the main function
     return 0;
 }
