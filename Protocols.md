@@ -56,7 +56,7 @@
                                                              128 Bytes
 ```
 
-## Server Response to Overseer (Valid Password)
+## Server Response to Overseer
 
 ```
     PTYPE   Error Code 
@@ -66,6 +66,8 @@
 ---------------------------------------------------------------
                                128 Bytes
 ```
+- Error Code == 0 Then Authentication Accepted
+- Error Code == 1 Then Error
 
 ## Server Sends Informer Info to Overseer (After Authentication)
 
@@ -80,18 +82,6 @@
 - This is sent to overseers for all connected informers when the overseer first connects.
 - When a new informer connects, this is sent to all overseers for that informer.
 
-
-## Server Response to Overseer (Error Authenticating)
-
-
-```
-    PTYPE   Error Code 
-    1 Byte    1 Byte       32 Bytes
-| 00000111 | 00000000 | Error Message | Remaining Null Bytes |
-
----------------------------------------------------------------
-                               128 Bytes
-```
 
 ## Server Payload to overseer updating system usage
 
