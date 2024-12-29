@@ -59,9 +59,20 @@
 ## Server Response to Overseer (Valid Password)
 
 ```
+    PTYPE   Error Code 
+    1 Byte    1 Byte       32 Bytes
+| 00000101 | 00000000 | Error Message | Remaining Null Bytes |
+
+---------------------------------------------------------------
+                               128 Bytes
+```
+
+## Server Sends Informer Info to Overseer (After Authentication)
+
+```
  PTYPE
    1 Byte     32 Bytes      32 Bytes      16 Bytes   32 Bytes      1 Byte         2 bytes             2 bytes           8 bytes
-| 00000101 | Informer_ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
+| 00000110 | Informer_ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
 -----------------------------------------------------------------------------------------------------------------------------------------------
                                                                128 Bytes
 ```
@@ -76,7 +87,7 @@
 ```
     PTYPE   Error Code 
     1 Byte    1 Byte       32 Bytes
-| 00000110 | 00000000 | Error Message | Remaining Null Bytes |
+| 00000111 | 00000000 | Error Message | Remaining Null Bytes |
 
 ---------------------------------------------------------------
                                128 Bytes
@@ -87,7 +98,7 @@
 ```
    PTYPE
    1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
-| 00000111 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+| 00001000 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                              128 Bytes
 ```
@@ -99,7 +110,7 @@
 ```
    PTYPE
   1 Bytes      32 Bytes     32 Bytes      
-| 00001000 | Informer_ID |   Reason   | Remaining Null Bytes |
+| 00001001 | Informer_ID |   Reason   | Remaining Null Bytes |
 --------------------------------------------------------------
                       128 Bytes
 ```
@@ -109,7 +120,7 @@
 ```
   PTYPE
   1 Byte
-| 00001001 | Remaining Null Bytes |
+| 00001010 | Remaining Null Bytes |
 -----------------------------------
            128 Bytes
 ```
@@ -119,7 +130,7 @@
 ```
    PTYPE
    1 Byte
-| 00001010 | Remaining Null Bytes |
+| 00001011 | Remaining Null Bytes |
 -----------------------------------
             128 Bytes
 ```
