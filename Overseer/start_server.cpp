@@ -7,8 +7,8 @@
 
 #define PORT 8080
 #define BUFFER_SIZE 128
-#define SERVER_ADDRESS "127.0.0.1" // Change to the server's IP if needed
-#define PASSWORD "fixed_password" // Set this to the password used for authentication
+#define SERVER_ADDRESS "127.0.0.1" 
+#define PASSWORD "fixed_password" 
 
 class Overseer {
 private:
@@ -39,13 +39,13 @@ private:
 
     void authenticate() {
         char buffer[BUFFER_SIZE] = {0};
-        buffer[0] = 0x00; // PTYPE for authentication
-        memcpy(buffer + 1, PASSWORD, strlen(PASSWORD)); // Send pasword for authentication
+        buffer[0] = 0x00; 
+        memcpy(buffer + 1, PASSWORD, strlen(PASSWORD)); 
 
-        // Send authentication reqst
+        
         send(socket_fd, buffer, BUFFER_SIZE, 0);
 
-        // Receive server rsponse
+        
         int bytes_received = recv(socket_fd, buffer, BUFFER_SIZE, 0);
         if (bytes_received <= 0) {
             std::cout << "Failed to authenticate. Reconnecting...\n";
@@ -54,10 +54,10 @@ private:
             authenticate();
         } else {
             uint8_t ptype = buffer[0];
-            if (ptype == 0x01 && buffer[1] == 0x00) { // Success response
+            if (ptype == 0x01 && buffer[1] == 0x00) { 
                 std::cout << "Authentication successful\n";
                 is_authenticated = true;
-                informer_id = std::string(buffer + 2, 32); // Receive informer ID
+                informer_id = std::string(buffer + 2, 32); 
             } else {
                 std::cout << "Authentication failed\n";
                 is_authenticated = false;
@@ -68,13 +68,13 @@ private:
     void request_system_info() {
         if (is_authenticated) {
             char buffer[BUFFER_SIZE] = {0};
-            buffer[0] = 0x10; // PTYPE for system information request
+            buffer[0] = 0x10; 
             memcpy(buffer + 1, informer_id.c_str(), informer_id.size());
 
-            // Send request for system info
+          
             send(socket_fd, buffer, BUFFER_SIZE, 0);
 
-            // Receive system info
+          
             int bytes_received = recv(socket_fd, buffer, BUFFER_SIZE, 0);
             if (bytes_received > 0) {
                 uint8_t ptype = buffer[0];
@@ -100,7 +100,7 @@ private:
                 authenticate();
             }
             request_system_info();
-            std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait for 5 seconds before requesting again
+            std::this_thread::sleep_for(std::chrono::seconds(5)); 
         }
     }
 
