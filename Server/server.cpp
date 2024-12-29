@@ -280,7 +280,10 @@ private:
 
     void handle_overseer_auth(int client_socket, char *buffer) {
         Overseer overseer(client_socket, generate_random_id()); 
-        std::string password = std::string(buffer + 1, 64);
+        std::string password = std::string(buffer + 1, this->password.size());
+
+        std::cout << password << std::endl;
+        std::cout << this->password << std::endl;
 
         if (password != this->password) {
             char response[BUFFER_SIZE] = {0};

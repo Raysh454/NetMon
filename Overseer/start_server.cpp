@@ -8,7 +8,7 @@
 #define PORT 8080
 #define BUFFER_SIZE 128
 #define SERVER_ADDRESS "127.0.0.1" 
-#define PASSWORD "fixed_password" 
+#define PASSWORD "Password" 
 
 class Overseer {
 private:
@@ -39,7 +39,7 @@ private:
 
     void authenticate() {
         char buffer[BUFFER_SIZE] = {0};
-        buffer[0] = 0x00; 
+        buffer[0] = 0b100; 
         memcpy(buffer + 1, PASSWORD, strlen(PASSWORD)); 
 
         
@@ -54,7 +54,7 @@ private:
             authenticate();
         } else {
             uint8_t ptype = buffer[0];
-            if (ptype == 0x01 && buffer[1] == 0x00) { 
+            if (ptype == 0b101 && buffer[1] == 0x00) { 
                 std::cout << "Authentication successful\n";
                 is_authenticated = true;
                 informer_id = std::string(buffer + 2, 32); 
