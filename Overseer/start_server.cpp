@@ -47,6 +47,7 @@ private:
 
         
         int bytes_received = recv(socket_fd, buffer, BUFFER_SIZE, 0);
+        
         if (bytes_received <= 0) {
             std::cout << "Failed to authenticate. Reconnecting...\n";
             close(socket_fd);
@@ -54,10 +55,9 @@ private:
             authenticate();
         } else {
             uint8_t ptype = buffer[0];
-            if (ptype == 0b101 && buffer[1] == 0x00) { 
+            if (ptype == 0b101 && buffer[1] == 0b00) { 
                 std::cout << "Authentication successful\n";
                 is_authenticated = true;
-                informer_id = std::string(buffer + 2, 32); 
             } else {
                 std::cout << "Authentication failed\n";
                 is_authenticated = false;
@@ -99,7 +99,7 @@ private:
             if (!is_authenticated) {
                 authenticate();
             }
-            request_system_info();
+            //request_system_info();
             std::this_thread::sleep_for(std::chrono::seconds(5)); 
         }
     }
