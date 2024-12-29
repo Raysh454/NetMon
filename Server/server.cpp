@@ -11,6 +11,11 @@
 
 #define PORT 8080
 #define BUFFER_SIZE 128
+#define UPDATE_OVERSEERS_INTERVAL 5
+#define INFORMER_TIMEOUT 10
+#define OVERSEER_TIMEOUT 10
+#define CLEANUP_INFORMERS_INTERVAL 20
+#define CLEANUP_OVERSEERS_INTERVAL 20
 
 typedef enum {
     INF_INIT = 0b00,
@@ -20,7 +25,10 @@ typedef enum {
     OS_AUTH = 0b100,
     OS_INFORMER_INFO = 0b101,
     OS_AUTH_ERR = 0b110,
-    OS_UPDATE_USG = 0b111
+    OS_UPDATE_USG = 0b111,
+    OS_NOTIFY_INFORMER_TIMEOUT = 0b1000,
+    OS_PING = 0b1001,
+    OS_PONG = 0b1010,
 } PTYPE;
 
 uint64_t ntohll( uint64_t val ) {
@@ -38,6 +46,7 @@ class Overseer {
         std::string overseer_id;
 
     Overseer(int socket, std::string overseer_id) : socket(socket), overseer_id(overseer_id) {};
+    Overseer() : socket(-1), overseer_id("") {};
 };
 
 // ------------------- Informer Class -------------------
@@ -61,13 +70,18 @@ public:
         uint64_t disk_used_gb;
     };
 
-    Informer() : socket(-1) {}
-    Informer(int socket) : socket(socket) {}
+    Informer() : socket(-1) {
+        last_update_time = std::chrono::steady_clock::now();
+    }
+    Informer(int socket) : socket(socket) {
+        last_update_time = std::chrono::steady_clock::now();
+    }
 
     std::string informer_id;
     SystemInformation info;
     SystemUsage usage;
     int socket;
+    std::chrono::steady_clock::time_point last_update_time;
 
     void update_usage(uint64_t cpu, uint64_t memory, uint64_t network_upload, uint64_t network_download, uint64_t disk) {
         usage.cpu_usage = cpu;
@@ -75,6 +89,16 @@ public:
         usage.network_upload = network_upload;
         usage.network_download = network_download;
         usage.disk_used_gb = disk;
+    }
+
+    bool has_timed_out() const {
+        auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - last_update_time);
+        return duration.count() > INFORMER_TIMEOUT;
+    }
+
+    void update_last_time() {
+        last_update_time = std::chrono::steady_clock::now();
     }
 
     void usage_to_lendian() {
@@ -231,6 +255,7 @@ private:
             if (informers.find(informer_id) != informers.end()) {
                 informers[informer_id].update_usage(cpu_usage, memory_usage, network_upload, network_download, disk_used);
                 informers[informer_id].usage_to_lendian();
+                informers[informer_id].update_last_time();
             } else if (informers.find(informer_id) == informers.end()) {
                 std::cout << "Error: ID Not Found" << std::endl;
                 std::cout << "System Informaton not updated" << std::endl;
@@ -319,9 +344,9 @@ private:
             
             *(packet + 113) = informers[informer_id].info.cores;
 
-            int memory_gb = ntohs(informers[informer_id].info.memory_gb);
-            int swap_gb = ntohs(informers[informer_id].info.swap_gb);
-            int storage_gb = ntohll(informers[informer_id].info.storage_gb);
+            uint16_t memory_gb = ntohs(informers[informer_id].info.memory_gb);
+            uint16_t swap_gb = ntohs(informers[informer_id].info.swap_gb);
+            uint64_t storage_gb = ntohll(informers[informer_id].info.storage_gb);
             
             memcpy(packet + 114, &memory_gb, sizeof(uint16_t));
             memcpy(packet + 116, &swap_gb, sizeof(uint16_t));
@@ -384,7 +409,112 @@ private:
     void update_overseers_periodically() {
         while (true) {
             update_overseers();
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::seconds(UPDATE_OVERSEERS_INTERVAL));
+        }
+    }
+
+    // Tells all overseers about the timed out informer.
+    void report_informer_timeout(std::string informer_id, std::string reason) {
+        for (const auto& overseer_pair: overseers) {
+            char packet[BUFFER_SIZE] = {0};
+            packet[0] = OS_NOTIFY_INFORMER_TIMEOUT;
+            memcpy(packet + 1, informer_id.c_str(), informer_id.size());
+            memcpy(packet + 33, reason.c_str(), reason.size());
+
+            // Send timeout to overseer
+            {
+                std::lock_guard<std::mutex> lock(overseers_mutex);
+                send(overseer_pair.second.socket, packet, BUFFER_SIZE, 0);
+            }
+        }
+    }
+
+    // Runs every 10 seconds, If an informer doesn't provide information for more than 10 seconds it's removed from the map.
+    void cleanup_informers() {
+      for (auto informer_iter = informers.begin(); informer_iter != informers.end();) {
+          std::string informer_id;
+          if (informer_iter->second.has_timed_out()) {
+              // Lock Mutex and cleanup informer
+              {
+                std::lock_guard<std::mutex> lock(informers_mutex);
+                if (informer_iter->second.socket) {
+                    close(informer_iter->second.socket);
+                }
+                
+                informer_id = informer_iter->second.informer_id;
+                // Remove from map
+                informer_iter = informers.erase(informer_iter);
+              }
+              std::cout << "Removed Informer ID: " << informer_id << " (Timed out)" << std::endl;
+              // Notify Overseers of timed out informer
+              report_informer_timeout(informer_id, "Timed out");
+          } else {
+              ++informer_iter;
+          }
+      } 
+    }
+
+    void cleanup_informers_periodically(){
+        while (true) {
+            cleanup_informers();
+            std::this_thread::sleep_for(std::chrono::seconds(CLEANUP_INFORMERS_INTERVAL));
+        }
+    }
+
+    // Checks whether overseers are still active, removes them if not.
+    void cleanup_overseers() {
+        char packet[BUFFER_SIZE] = {0};
+        packet[0] = OS_PING;
+
+        std::lock_guard<std::mutex> lock(overseers_mutex);
+        
+        for (auto overseer_iter = overseers.begin(); overseer_iter != overseers.end();) {
+            char buffer[BUFFER_SIZE] = {0};
+
+            // Send PING packet
+            send(overseer_iter->second.socket, packet, BUFFER_SIZE, 0);
+
+            // Set up select for timeout
+            fd_set readfds;
+            FD_ZERO(&readfds);
+            FD_SET(overseer_iter->second.socket, &readfds);
+            
+            struct timeval timeout;
+            timeout.tv_sec = INFORMER_TIMEOUT;  // Set timeout duration (in seconds)
+
+            int activity = select(overseer_iter->second.socket + 1, &readfds, NULL, NULL, &timeout);
+            
+            if (activity > 0) {
+                // Socket is ready for reading, perform recv
+                int recv_size = recv(overseer_iter->second.socket, buffer, BUFFER_SIZE, 0);
+                
+                if (recv_size > 0 && buffer[0] == OS_PONG) {
+                    // Valid PONG response
+                    ++overseer_iter;
+                } else {
+                    // Handle error or invalid response
+                    close(overseer_iter->second.socket);
+                    overseer_iter = overseers.erase(overseer_iter);
+                }
+            } else if (activity == 0) {
+                // Timeout occurred, no response from overseer
+                close(overseer_iter->second.socket);
+                overseer_iter = overseers.erase(overseer_iter);
+            } else {
+                // Error in select
+                std::cout << "select() Failed." << std::endl;
+                close(overseer_iter->second.socket);
+                overseer_iter = overseers.erase(overseer_iter);
+            }
+        }
+    }
+
+
+    void cleanup_overseers_periodically() {
+        while (true) {
+            cleanup_overseers();
+            std::this_thread::sleep_for(std::chrono::seconds(CLEANUP_OVERSEERS_INTERVAL));
+
         }
     }
 
@@ -395,6 +525,10 @@ public:
         initialize_socket();
         // Sends usage information to overseers at an interval.
         std::thread(&NetMonServer::update_overseers_periodically, this).detach();
+        // Cleans up timed out informers
+        std::thread(&NetMonServer::cleanup_informers_periodically, this).detach();
+        // Cleans up inactive overseers
+        std::thread(&NetMonServer::cleanup_overseers_periodically, this).detach();
 
         while (true) {
             struct sockaddr_in address;
