@@ -9,7 +9,6 @@
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8080
 #define BUFFER_SIZE 128
-<<<<<<< HEAD
 
 typedef enum {
     INF_INIT = 0b00,
@@ -25,10 +24,6 @@ typedef enum {
     OS_PONG = 0b1010,
     OS_CHECK_ALIVE = 0b1100,  // New type to check if overseer is alive
 } PTYPE;
-=======
-#define SERVER_ADDRESS "127.0.0.1" 
-#define PASSWORD "Password" 
->>>>>>> ce846587685429a920e748e59b9d7bdaa7accf8d
 
 class Overseer {
 private:
@@ -37,38 +32,11 @@ private:
 
     void send_authentication_request() {
         char buffer[BUFFER_SIZE] = {0};
-<<<<<<< HEAD
         buffer[0] = OS_AUTH;
         memcpy(buffer + 1, password.c_str(), password.size());
 
         send(sock, buffer, BUFFER_SIZE, 0);
         std::cout << "Sent authentication request to server...\n";
-=======
-        buffer[0] = 0b100; 
-        memcpy(buffer + 1, PASSWORD, strlen(PASSWORD)); 
-
-        
-        send(socket_fd, buffer, BUFFER_SIZE, 0);
-
-        
-        int bytes_received = recv(socket_fd, buffer, BUFFER_SIZE, 0);
-        
-        if (bytes_received <= 0) {
-            std::cout << "Failed to authenticate. Reconnecting...\n";
-            close(socket_fd);
-            connect_to_server();
-            authenticate();
-        } else {
-            uint8_t ptype = buffer[0];
-            if (ptype == 0b101 && buffer[1] == 0b00) { 
-                std::cout << "Authentication successful\n";
-                is_authenticated = true;
-            } else {
-                std::cout << "Authentication failed\n";
-                is_authenticated = false;
-            }
-        }
->>>>>>> ce846587685429a920e748e59b9d7bdaa7accf8d
     }
 
     // Custom function to convert 64-bit values from network byte order to host byte order
@@ -133,11 +101,6 @@ private:
                 default:
                     std::cout << "Unknown packet type received: " << (int)ptype << std::endl;
             }
-<<<<<<< HEAD
-=======
-            //request_system_info();
-            std::this_thread::sleep_for(std::chrono::seconds(5)); 
->>>>>>> ce846587685429a920e748e59b9d7bdaa7accf8d
         }
     }
 
