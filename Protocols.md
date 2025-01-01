@@ -56,12 +56,25 @@
                                                              128 Bytes
 ```
 
-## Server Response to Overseer (Valid Password)
+## Server Response to Overseer
+
+```
+    PTYPE   Error Code 
+    1 Byte    1 Byte       32 Bytes
+| 00000101 | 00000000 | Error Message | Remaining Null Bytes |
+
+---------------------------------------------------------------
+                               128 Bytes
+```
+- Error Code == 0 Then Authentication Accepted
+- Error Code == 1 Then Error
+
+## Server Sends Informer Info to Overseer (After Authentication)
 
 ```
  PTYPE
    1 Byte     32 Bytes      32 Bytes      16 Bytes   32 Bytes      1 Byte         2 bytes             2 bytes           8 bytes
-| 00000101 | Informer_ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
+| 00000110 | Informer_ID | Computer Name | Platform | CPU Model | Num Of Cores | Main Memory (GB) | Swap Memory (GB) | Total Storage (GB) | Remaining Null Bytes |
 -----------------------------------------------------------------------------------------------------------------------------------------------
                                                                128 Bytes
 ```
@@ -70,24 +83,12 @@
 - When a new informer connects, this is sent to all overseers for that informer.
 
 
-## Server Response to Overseer (Error Authenticating)
-
-
-```
-    PTYPE   Error Code 
-    1 Byte    1 Byte       32 Bytes
-| 00000110 | 00000000 | Error Message | Remaining Null Bytes |
-
----------------------------------------------------------------
-                               128 Bytes
-```
-
 ## Server Payload to overseer updating system usage
 
 ```
    PTYPE
    1 Byte      32 Bytes     8 Bytes      8 Bytes         8 Bytes             8 Bytes                    8 Bytes
-| 00000111 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
+| 00001000 | Informer_ID | CPU Usage | Memory Usage | Network Download |  Netowrk Upload | Total Disk Used(Accross all drives)(GB) |  Remaining Null Bytes |
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                              128 Bytes
 ```
@@ -99,7 +100,7 @@
 ```
    PTYPE
   1 Bytes      32 Bytes     32 Bytes      
-| 00001000 | Informer_ID |   Reason   | Remaining Null Bytes |
+| 00001001 | Informer_ID |   Reason   | Remaining Null Bytes |
 --------------------------------------------------------------
                       128 Bytes
 ```
@@ -109,7 +110,7 @@
 ```
   PTYPE
   1 Byte
-| 00001001 | Remaining Null Bytes |
+| 00001010 | Remaining Null Bytes |
 -----------------------------------
            128 Bytes
 ```
@@ -119,7 +120,7 @@
 ```
    PTYPE
    1 Byte
-| 00001010 | Remaining Null Bytes |
+| 00001011 | Remaining Null Bytes |
 -----------------------------------
             128 Bytes
 ```

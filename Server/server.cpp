@@ -23,8 +23,8 @@ typedef enum {
     INF_USAGE = 0b10,
     INF_ACK = 0b11,
     OS_AUTH = 0b100,
-    OS_INFORMER_INFO = 0b101,
-    OS_AUTH_ERR = 0b110,
+    OS_AUTH_INFO = 0b101,
+    OS_INFORMER_INFO = 0b110,
     OS_UPDATE_USG = 0b111,
     OS_NOTIFY_INFORMER_TIMEOUT = 0b1000,
     OS_PING = 0b1001,
@@ -193,6 +193,7 @@ private:
                     break;
                 case OS_AUTH:
                     handle_overseer_auth(client_socket, buffer);
+                    break;
                 default:
                     std::cout << "Unknown packet type from client.\n";
             }
@@ -280,11 +281,11 @@ private:
 
     void handle_overseer_auth(int client_socket, char *buffer) {
         Overseer overseer(client_socket, generate_random_id()); 
-        std::string password = std::string(buffer + 1, 64);
+        std::string password = std::string(buffer + 1, this->password.size());
 
         if (password != this->password) {
             char response[BUFFER_SIZE] = {0};
-            response[0] = OS_AUTH_ERR;
+            response[0] = OS_AUTH_INFO;
             response[1] = 0b01;
             std::string error_msg = "Error: Invalid Password";
             memcpy(response + 2, error_msg.c_str() , error_msg.size());
@@ -299,7 +300,14 @@ private:
             overseers[overseer.overseer_id] = overseer;
         }
 
+        // Accept Authentication
+        char response[BUFFER_SIZE] = {0};
+        response[0] = OS_AUTH_INFO;
+        response[1] = 0b00;
+        send(client_socket, response, BUFFER_SIZE, 0);
+
         send_all_informers_to_overseer(overseer.overseer_id);
+
     }
 
     // Sends System Information of all informers to overseer.
@@ -325,6 +333,7 @@ private:
 
             // Send to overseer.
             {
+                std::cout << "Sending info to " << overseers[overseer_id].overseer_id << std::endl;
                 std::lock_guard<std::mutex> lock(overseers_mutex);
                 send(overseers[overseer_id].socket, packet, BUFFER_SIZE, 0);
             }
@@ -524,11 +533,11 @@ public:
     void run() {
         initialize_socket();
         // Sends usage information to overseers at an interval.
-        std::thread(&NetMonServer::update_overseers_periodically, this).detach();
+        //std::thread(&NetMonServer::update_overseers_periodically, this).detach();
         // Cleans up timed out informers
-        std::thread(&NetMonServer::cleanup_informers_periodically, this).detach();
+        //std::thread(&NetMonServer::cleanup_informers_periodically, this).detach();
         // Cleans up inactive overseers
-        std::thread(&NetMonServer::cleanup_overseers_periodically, this).detach();
+        //std::thread(&NetMonServer::cleanup_overseers_periodically, this).detach();
 
         while (true) {
             struct sockaddr_in address;
