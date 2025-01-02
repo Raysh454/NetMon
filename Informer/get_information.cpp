@@ -16,9 +16,9 @@
 struct SystemInformation {
     float cpu;
     float memory;
-    float disk_gb;  // Changed to store GB instead of percentage
-    float network_download_mbs;  // Added download speed
-    float network_upload_mbs;    // Added upload speed
+    float disk_gb;
+    float network_download_mbs;
+    float network_upload_mbs;
     
     SystemInformation() : cpu(0), memory(0), disk_gb(0), 
                          network_download_mbs(0), network_upload_mbs(0) {}
