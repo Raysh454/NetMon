@@ -43,6 +43,7 @@ uint64_t ntohll( uint64_t val ) {
 class Overseer {
     public:
         int socket;
+        bool connection_alive = true;
         std::string overseer_id;
 
     Overseer(int socket, std::string overseer_id) : socket(socket), overseer_id(overseer_id) {};
