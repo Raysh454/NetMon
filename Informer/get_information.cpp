@@ -104,6 +104,7 @@ private:
 
         struct mntent* entry;
         while ((entry = getmntent(mtab)) != nullptr) {
+            // Skip virtual filesystems
             if (std::string(entry->mnt_type).find("tmpfs") != std::string::npos ||
                 std::string(entry->mnt_type).find("devtmpfs") != std::string::npos ||
                 std::string(entry->mnt_type).find("proc") != std::string::npos ||
@@ -114,9 +115,9 @@ private:
 
             struct statvfs fs_stats;
             if (statvfs(entry->mnt_dir, &fs_stats) == 0) {
-                unsigned long long total = fs_stats.f_blocks * fs_stats.f_frsize;
-                unsigned long long free = fs_stats.f_bfree * fs_stats.f_frsize;
-                unsigned long long used = total - free;
+                uint64_t total = fs_stats.f_blocks * fs_stats.f_frsize;
+                uint64_t free = fs_stats.f_bfree * fs_stats.f_frsize;
+                uint64_t used = total - free;
                 total_gb_used += static_cast<float>(used) / (1024 * 1024 * 1024);
             }
         }
@@ -194,18 +195,18 @@ public:
 
 #endif
 
-int main() {
-    InformationGrabber grabber;
-    SystemInformation info;
-    while(true) {
-        if (grabber.get_information(info) == 0) {
-            std::cout << "CPU: " << info.cpu << "%" << std::endl;
-            std::cout << "Memory: " << info.memory << "%" << std::endl;
-            std::cout << "Disk: " << info.disk_gb << " GB" << std::endl;
-            std::cout << "Network Download: " << info.network_download_mbs << " MB/s" << std::endl;
-            std::cout << "Network Upload: " << info.network_upload_mbs << " MB/s" << std::endl;
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    return 0;
-}
+// int main() {
+//     InformationGrabber grabber;
+//     SystemInformation info;
+//     while(true) {
+//         if (grabber.get_information(info) == 0) {
+//             std::cout << "CPU: " << info.cpu << "%" << std::endl;
+//             std::cout << "Memory: " << info.memory << "%" << std::endl;
+//             std::cout << "Disk: " << info.disk_gb << " GB" << std::endl;
+//             std::cout << "Network Download: " << info.network_download_mbs << " MB/s" << std::endl;
+//             std::cout << "Network Upload: " << info.network_upload_mbs << " MB/s" << std::endl;
+//         }
+//         std::this_thread::sleep_for(std::chrono::seconds(1));
+//     }
+//     return 0;
+// }

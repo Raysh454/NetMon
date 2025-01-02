@@ -130,10 +130,12 @@ public:
 
     void display_system_usage() {
         std::cout << "Informer id: " << informer_id << std::endl;
-        printf("CPU Usage: %lu\n", usage.cpu_usage);
-        printf("Memory Used: %lu\n", usage.memory_usage);
-        printf("Network Up/Down: %lu/%lu\n", usage.network_upload, usage.network_download);
-        printf("Disk space used: %lu\n", usage.disk_used_gb);
+        printf("CPU Usage: %.2f%%\n", (float)usage.cpu_usage / 100.0);
+        printf("Memory Used: %.2f%%\n", (float)usage.memory_usage / 100.0);
+        printf("Network Up/Down: %.2f/%.2f MB/s\n", 
+               (float)usage.network_upload / 100.0, 
+               (float)usage.network_download / 100.0);
+        printf("Disk space used: %lu GB\n", usage.disk_used_gb);
     }
 
 
@@ -221,7 +223,6 @@ private:
         info.platform = std::string(buffer+33, 16);
         info.cpu_model = std::string(buffer+49, 32);
 
-        // Copy integers safely using memcpy
         memcpy(&info.cores, buffer + 81, sizeof(uint8_t));
         memcpy(&info.memory_gb, buffer + 82, sizeof(uint16_t));
         memcpy(&info.swap_gb, buffer + 84, sizeof(uint16_t));
@@ -537,11 +538,11 @@ public:
     void run() {
         initialize_socket();
         // Sends usage information to overseers at an interval.
-        //std::thread(&NetMonServer::update_overseers_periodically, this).detach();
+        std::thread(&NetMonServer::update_overseers_periodically, this).detach();
         // Cleans up timed out informers
-        //std::thread(&NetMonServer::cleanup_informers_periodically, this).detach();
+        std::thread(&NetMonServer::cleanup_informers_periodically, this).detach();
         // Cleans up inactive overseers
-        //std::thread(&NetMonServer::cleanup_overseers_periodically, this).detach();
+        std::thread(&NetMonServer::cleanup_overseers_periodically, this).detach();
 
         while (true) {
             struct sockaddr_in address;
