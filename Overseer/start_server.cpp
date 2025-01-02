@@ -141,7 +141,7 @@ public:
 };
 
 int main() {
-    std::string password = "your_password_here";
+    std::string password = "abc123";
     Overseer overseer(SERVER_IP, SERVER_PORT, password);
     overseer.start();
 
