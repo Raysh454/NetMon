@@ -16,13 +16,12 @@ typedef enum {
     INF_USAGE = 0b10,
     INF_ACK = 0b11,
     OS_AUTH = 0b100,
-    OS_INFORMER_INFO = 0b101,
-    OS_AUTH_ERR = 0b110,
+    OS_AUTH_INFO = 0b101,
+    OS_INFORMER_INFO = 0b110,
     OS_UPDATE_USG = 0b111,
     OS_NOTIFY_INFORMER_TIMEOUT = 0b1000,
     OS_PING = 0b1001,
     OS_PONG = 0b1010,
-    OS_CHECK_ALIVE = 0b1100,  // New type to check if overseer is alive
 } PTYPE;
 
 class Overseer {
@@ -57,9 +56,14 @@ private:
 
             uint8_t ptype = buffer[0];
             switch (ptype) {
-                case OS_AUTH_ERR: {
-                    std::cout << "Authentication failed: " << buffer + 2 << std::endl;
-                    return;
+                case OS_AUTH_INFO: {
+                    if (buffer[1] == 0) {
+                        std::cout << "Authentication successful." << std::endl;
+                    } else {
+                        std::cout << "Authentication failed: " << buffer + 2 << std::endl;
+                        return;
+                    }
+                    break;
                 }
                 case OS_INFORMER_INFO: {
                     // Handle informer system info
@@ -85,17 +89,8 @@ private:
                 case OS_PING: {
                     // Respond to a ping request from the server
                     std::cout << "Received PING, sending PONG...\n";
-                    char pong_buffer[BUFFER_SIZE] = {0};
-                    pong_buffer[0] = OS_PONG;
-                    send(sock, pong_buffer, BUFFER_SIZE, 0);
-                    break;
-                }
-                case OS_CHECK_ALIVE: {
-                    // Handle check to see if overseer is still active
-                    std::cout << "Received check alive request from server. Responding...\n";
-                    char alive_buffer[BUFFER_SIZE] = {0};
-                    alive_buffer[0] = OS_PONG;  // Send PONG to confirm active status
-                    send(sock, alive_buffer, BUFFER_SIZE, 0);
+                    buffer[0] = OS_PONG;
+                    send(sock, buffer, BUFFER_SIZE, 0);
                     break;
                 }
                 default:

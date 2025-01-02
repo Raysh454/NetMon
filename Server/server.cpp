@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdint>
 #include <iostream>
 #include <netinet/in.h>
@@ -195,6 +196,17 @@ private:
                 case OS_AUTH:
                     handle_overseer_auth(client_socket, buffer);
                     break;
+                case OS_PONG: {
+                    // Set connection_alive to true if we get a reply
+                    std::string overseer_id = std::string(buffer + 1, 32);
+                    if (overseers.find(overseer_id) != overseers.end()) {
+                        std::lock_guard<std::mutex> lock(overseers_mutex);
+                        overseers[overseer_id].connection_alive = true;
+                    } else {
+                        std::cout << "Received unkown overseer_id in OS_PONG: " << overseer_id << std::endl;
+                    }
+                    break;
+                }
                 default:
                     std::cout << "Unknown packet type from client.\n" << ptype;
             }
@@ -291,7 +303,7 @@ private:
             response[1] = 0b01;
             std::string error_msg = "Error: Invalid Password";
             memcpy(response + 2, error_msg.c_str() , error_msg.size());
-            send(client_socket, buffer, BUFFER_SIZE, 0);
+            send(client_socket, response, BUFFER_SIZE, 0);
             std::cout << "Overseer password:" << password << ", this-> password: " << this->password;
             std::cout << "Overseer faild to authenticate" << std::endl;
             return;
@@ -308,6 +320,8 @@ private:
         response[0] = OS_AUTH_INFO;
         response[1] = 0b00;
         send(client_socket, response, BUFFER_SIZE, 0);
+
+        std::cout << "New Overseer: " << overseer.overseer_id << " Authenticated" << std::endl;
 
         send_all_informers_to_overseer(overseer.overseer_id);
 
@@ -475,50 +489,37 @@ private:
 
     // Checks whether overseers are still active, removes them if not.
     void cleanup_overseers() {
-        char packet[BUFFER_SIZE] = {0};
-        packet[0] = OS_PING;
 
-        std::lock_guard<std::mutex> lock(overseers_mutex);
-        
-        for (auto overseer_iter = overseers.begin(); overseer_iter != overseers.end();) {
-            char buffer[BUFFER_SIZE] = {0};
+        // Set connection_alive to false and send a ping to all overseers.
+        {
+            std::lock_guard<std::mutex> lock(overseers_mutex);
+            for (auto &overseer_pair: overseers) {
+                overseer_pair.second.connection_alive = false;
 
-            // Send PING packet
-            send(overseer_iter->second.socket, packet, BUFFER_SIZE, 0);
-
-            // Set up select for timeout
-            fd_set readfds;
-            FD_ZERO(&readfds);
-            FD_SET(overseer_iter->second.socket, &readfds);
-            
-            struct timeval timeout;
-            timeout.tv_sec = INFORMER_TIMEOUT;  // Set timeout duration (in seconds)
-
-            int activity = select(overseer_iter->second.socket + 1, &readfds, NULL, NULL, &timeout);
-            
-            if (activity > 0) {
-                // Socket is ready for reading, perform recv
-                int recv_size = recv(overseer_iter->second.socket, buffer, BUFFER_SIZE, 0);
-                
-                if (recv_size > 0 && buffer[0] == OS_PONG) {
-                    // Valid PONG response
-                    ++overseer_iter;
-                } else {
-                    // Handle error or invalid response
-                    close(overseer_iter->second.socket);
-                    overseer_iter = overseers.erase(overseer_iter);
-                }
-            } else if (activity == 0) {
-                // Timeout occurred, no response from overseer
-                close(overseer_iter->second.socket);
-                overseer_iter = overseers.erase(overseer_iter);
-            } else {
-                // Error in select
-                std::cout << "select() Failed." << std::endl;
-                close(overseer_iter->second.socket);
-                overseer_iter = overseers.erase(overseer_iter);
+                char packet[BUFFER_SIZE] = {0};
+                packet[0] = OS_PING;
+                memcpy(packet + 1, overseer_pair.first.c_str(), overseer_pair.first.size());
+                send(overseer_pair.second.socket, packet, BUFFER_SIZE, 0); 
             }
         }
+
+        // Wait for overseer's reply
+        std::this_thread::sleep_for(std::chrono::seconds(OVERSEER_TIMEOUT));
+
+        // If an overseer has replied, then handle_connection should have received it and set connection_alive for that overseer to true.
+        // If it is false then we can time out the overseer.
+         for (auto overseer_iter = overseers.begin(); overseer_iter != overseers.end();) {
+            if (!overseer_iter->second.connection_alive) {
+                {
+                    std::lock_guard<std::mutex> lock(overseers_mutex);
+                    if (overseer_iter->second.socket)
+                        close(overseer_iter->second.socket);
+                    overseer_iter = overseers.erase(overseer_iter);
+                }
+            } else 
+                overseer_iter++;
+         }
+       
     }
 
 
