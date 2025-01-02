@@ -371,8 +371,8 @@ private:
         } 
     }
 
-    // Sends system usage information to all informers, this should be run at an interval.
-    // Running it everytime we get an update from an overseer would have too much of an effect on performance.
+    // Sends system usage information to all overseers, this should be run at an interval.
+    // Running it everytime we get an update from an informer would have too much of an effect on performance.
     void update_overseers() {
         for (const auto& overseer_pair: overseers) {
             for (const auto& informer_pair: informers) {
