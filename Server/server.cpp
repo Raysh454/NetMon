@@ -196,7 +196,7 @@ private:
                     handle_overseer_auth(client_socket, buffer);
                     break;
                 default:
-                    std::cout << "Unknown packet type from client.\n";
+                    std::cout << "Unknown packet type from client.\n" << ptype;
             }
         }
         close(client_socket);
@@ -285,12 +285,14 @@ private:
         std::string password = std::string(buffer + 1, this->password.size());
 
         if (password != this->password) {
+            
             char response[BUFFER_SIZE] = {0};
             response[0] = OS_AUTH_INFO;
             response[1] = 0b01;
             std::string error_msg = "Error: Invalid Password";
             memcpy(response + 2, error_msg.c_str() , error_msg.size());
             send(client_socket, buffer, BUFFER_SIZE, 0);
+            std::cout << "Overseer password:" << password << ", this-> password: " << this->password;
             std::cout << "Overseer faild to authenticate" << std::endl;
             return;
         }
@@ -370,8 +372,8 @@ private:
         } 
     }
 
-    // Sends system usage information to all informers, this should be run at an interval.
-    // Running it everytime we get an update from an overseer would have too much of an effect on performance.
+    // Sends system usage information to all overseers, this should be run at an interval.
+    // Running it everytime we get an update from an informer would have too much of an effect on performance.
     void update_overseers() {
         for (const auto& overseer_pair: overseers) {
             for (const auto& informer_pair: informers) {
