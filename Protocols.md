@@ -109,8 +109,8 @@
 
 ```
   PTYPE
-  1 Byte
-| 00001010 | Remaining Null Bytes |
+  1 Byte      32 Bytes
+| 00001010 | Overseer_ID | Remaining Null Bytes |
 -----------------------------------
            128 Bytes
 ```
@@ -119,8 +119,8 @@
 
 ```
    PTYPE
-   1 Byte
-| 00001011 | Remaining Null Bytes |
+   1 Byte      32 Bytes
+| 00001011 | Overseer ID | Remaining Null Bytes |
 -----------------------------------
             128 Bytes
 ```
