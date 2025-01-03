@@ -512,6 +512,7 @@ private:
          for (auto overseer_iter = overseers.begin(); overseer_iter != overseers.end();) {
             if (!overseer_iter->second.connection_alive) {
                 {
+                    std::cout << "Removed Overseer ID: " << overseer_iter->first << " (Timed out)" << std::endl;
                     std::lock_guard<std::mutex> lock(overseers_mutex);
                     if (overseer_iter->second.socket)
                         close(overseer_iter->second.socket);
