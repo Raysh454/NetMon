@@ -1,4 +1,3 @@
-# Compiler
 CXX = g++
 CXXFLAGS = -Wall -O2
 
@@ -13,15 +12,15 @@ TARGETS = informer overseer server
 all: $(patsubst %, $(BIN_DIR)/%, $(TARGETS))
 
 # Build rules
-$(BIN_DIR)/Informer: $(SRC_DIR)/Informer/informer.cpp
+$(BIN_DIR)/informer: $(SRC_DIR)/Informer/informer.cpp
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-$(BIN_DIR)/Overseer: $(SRC_DIR)/Overseer/overseer.cpp
+$(BIN_DIR)/overseer: $(SRC_DIR)/Overseer/overseer.cpp
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-$(BIN_DIR)/Server: $(SRC_DIR)/Server/server.cpp
+$(BIN_DIR)/server: $(SRC_DIR)/Server/server.cpp
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
@@ -35,4 +34,3 @@ clean:
 	rm -rf $(BIN_DIR)
 
 .PHONY: all clean informer overseer server
-
