@@ -124,7 +124,6 @@ public:
         std::cout << "CPU Model: " << info.cpu_model << std::endl;
         printf("Number of Cores: %d\n", info.cores);
         printf("Memory: %u\n", info.memory_gb);
-        printf("Swap Size: %u\n", info.swap_gb);
         printf("Total Storage: %lu\n", info.storage_gb);
     }
 
