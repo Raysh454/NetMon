@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <sys/utsname.h>
 #include <mntent.h>
+#include <cmath>
 
 #define BUFFER_SIZE 128
 #define UPDATE_INTERVAL 5
@@ -74,7 +75,7 @@ private:
         buffer[81] = sysconf(_SC_NPROCESSORS_ONLN);
 
         // Fill memory info (2 bytes each)
-        uint16_t total_ram = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGE_SIZE) / (1024*1024*1024); // Convert to GB
+        uint16_t total_ram = ntohs(static_cast<uint16_t>(round(static_cast<double>(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGE_SIZE)) / (1024.0 * 1024.0 * 1024.0))));
         uint16_t total_swap = 0; // Get from sysinfo() in production
         memcpy(buffer + 82, &total_ram, sizeof(uint16_t));
         memcpy(buffer + 84, &total_swap, sizeof(uint16_t));
