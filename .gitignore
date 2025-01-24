@@ -50,3 +50,4 @@ build/
 # Ignore the generated compile_commands.json if not needed for LSP
 compile_commands.json
 
+bin/
