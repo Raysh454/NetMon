@@ -1,0 +1,53 @@
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeOutput.log
+CMakeError.log
+Makefile
+Makefile2
+cmake_install.cmake
+*.cmake
+.cache/
+
+# Qt generated files
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Qt Autogen files
+Overseer_autogen.dir/
+
+# Object files, libraries, and executables
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+
+# IDE files
+.vscode/
+.idea/
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+*.qmake.cache
+
+# Temporary and backup files
+*~
+*.swp
+*.bak
+*.orig
+*.log
+*.tmp
+*.obj
+*.lib
+*.exp
+
+# Other build files
+build/
+
+# Ignore the generated compile_commands.json if not needed for LSP
+compile_commands.json
+
+bin/
