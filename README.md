@@ -4,6 +4,8 @@ NetMon will help monitor system information for different computers over the net
 # Installation
 
 ## Requires
+- make
+- g++
 - qt6
 - cmake
 
