@@ -18,10 +18,14 @@ set(SOURCES
     src/main.cpp
     src/LoginWindow/login_window.cpp
     src/MainWindow/main_window.cpp
+    src/Overseer/overseer.cpp
+    src/Informer/informer.cpp
     )
 
 set(UI_FILES
-    src/UIFiles/login.ui)
+    src/UIFiles/login.ui
+    src/UIFiles/main.ui
+    )
 
 # Add the executable
 add_executable(Overseer ${SOURCES} ${UI_FILES})

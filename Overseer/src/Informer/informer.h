@@ -1,5 +1,8 @@
-#include "../include/common.h"
-#include "../Utils/utils.h"
+#ifndef INFORMER_H
+#define INFORMER_H
+
+#include "../Common/common.h"
+#include <iostream>
 
 class Informer {
 public:
@@ -25,15 +28,10 @@ public:
     SystemInformation info;
     SystemUsage usage;
     int socket;
-    std::chrono::steady_clock::time_point last_update_time;
-
-    Informer();
-    Informer(int socket);
 
     void update_usage(uint64_t cpu, uint64_t memory, uint64_t network_upload, uint64_t network_download, uint64_t disk);
-    bool has_timed_out() const;
-    void update_last_time();
-    void sysinfo_to_lendian();
     void display_system_information();
     void display_system_usage();
 };
+
+#endif

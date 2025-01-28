@@ -3,7 +3,10 @@
 
 #include <QWidget>
 #include <qtmetamacros.h>
+#include <QMessageBox>
+#include <qmessagebox.h>
 #include "ui_login.h"
+#include "../Overseer/overseer.h"
 
 class LoginWindow : public QWidget {
     Q_OBJECT
@@ -12,7 +15,7 @@ public:
     explicit LoginWindow(QWidget *parent = nullptr);
 
 signals:
-    void loginSuccessful();
+    void loginSuccessful(Overseer *overseer);
 
 private slots:
     void onConnectButtonClicked();

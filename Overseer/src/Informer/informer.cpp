@@ -1,13 +1,4 @@
-// informer.cpp
 #include "informer.h"
-
-Informer::Informer() : socket(-1) {
-    last_update_time = std::chrono::steady_clock::now();
-}
-
-Informer::Informer(int socket) : socket(socket) {
-    last_update_time = std::chrono::steady_clock::now();
-}
 
 void Informer::update_usage(uint64_t cpu, uint64_t memory, uint64_t network_upload, uint64_t network_download, uint64_t disk) {
     usage.cpu_usage = ntohll(cpu);
@@ -15,22 +6,6 @@ void Informer::update_usage(uint64_t cpu, uint64_t memory, uint64_t network_uplo
     usage.network_upload = ntohll(network_upload);
     usage.network_download = ntohll(network_download);
     usage.disk_used_gb = ntohll(disk);
-}
-
-bool Informer::has_timed_out() const {
-    auto now = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - last_update_time);
-    return duration.count() > INFORMER_TIMEOUT;
-}
-
-void Informer::update_last_time() {
-    last_update_time = std::chrono::steady_clock::now();
-}
-
-void Informer::sysinfo_to_lendian() {
-    info.memory_gb = ntohs(info.memory_gb);
-    info.swap_gb = ntohs(info.swap_gb);
-    info.storage_gb = ntohll(info.storage_gb);
 }
 
 void Informer::display_system_information() {
@@ -50,4 +25,3 @@ void Informer::display_system_usage() {
     printf("Network Up/Down: %.2f/%.2f MB/s\n", (float)usage.network_upload / 100.0, (float)usage.network_download / 100.0);
     printf("Disk space used: %lu GB\n", usage.disk_used_gb);
 }
-

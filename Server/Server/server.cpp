@@ -41,7 +41,7 @@ void NetMonServer::handle_client(int client_socket) {
                 handle_informer_init(client_socket, buffer);
                 break;
             case INF_USAGE: // Informer System Info
-                handle_system_info(client_socket, buffer);
+                handle_update_usage(client_socket, buffer);
                 break;
             case OS_AUTH:
                 handle_overseer_auth(client_socket, buffer);
@@ -100,7 +100,7 @@ void NetMonServer::handle_informer_init(int client_socket, char* buffer) {
     send_informer_to_overseers(informer_id);
 }
 
-void NetMonServer::handle_system_info(int client_socket, char* buffer) {
+void NetMonServer::handle_update_usage(int client_socket, char* buffer) {
     uint8_t error_bit = 0b00;
     uint8_t ack_bit = 0b01;
     std::string error_msg = "";
@@ -117,7 +117,6 @@ void NetMonServer::handle_system_info(int client_socket, char* buffer) {
         std::lock_guard<std::mutex> lock(informers_mutex);
         if (informers.find(informer_id) != informers.end()) {
             informers[informer_id].update_usage(cpu_usage, memory_usage, network_upload, network_download, disk_used);
-            informers[informer_id].usage_to_lendian();
             informers[informer_id].update_last_time();
         } else if (informers.find(informer_id) == informers.end()) {
             std::cout << "Error: ID Not Found" << std::endl;
@@ -153,7 +152,6 @@ void NetMonServer::handle_overseer_auth(int client_socket, char *buffer) {
         std::string error_msg = "Error: Invalid Password";
         memcpy(response + 2, error_msg.c_str() , error_msg.size());
         send(client_socket, response, BUFFER_SIZE, 0);
-        std::cout << "Overseer password:" << password << ", this-> password: " << this->password;
         std::cout << "Overseer faild to authenticate" << std::endl;
         return;
     }

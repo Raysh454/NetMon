@@ -14,7 +14,7 @@ private:
     void initialize_socket();
     void handle_client(int client_socket);
     void handle_informer_init(int client_socket, char* buffer);
-    void handle_system_info(int client_socket, char* buffer);
+    void handle_update_usage(int client_socket, char* buffer);
     void handle_overseer_auth(int client_socket, char *buffer);
     void send_all_informers_to_overseer(std::string overseer_id);
     void send_informer_to_overseers(std::string informer_id);

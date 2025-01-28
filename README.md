@@ -1,6 +1,20 @@
 # NetMon
 NetMon will help monitor system information for different computers over the network and broadcast the information to clients that are authorized to view it.
 
+# Installation
+
+## Requires
+- qt6
+- cmake
+
+## Installation:
+
+```bash
+git clone https://github.com/raysh454/NetMon
+cd NetMon
+make all
+```
+
 # Components
 
 ## Server
