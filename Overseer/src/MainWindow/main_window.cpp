@@ -94,13 +94,53 @@ void MainWindow::onInformerClicked(QListWidgetItem *item) {
 
 void MainWindow::handleInformerDisconnected(const std::string informer_id) {
     QString QInformerID = QString::fromStdString(informer_id);
-    QList<QListWidgetItem *> items = ui.QInformerList->findItems(QInformerID, Qt::MatchExactly);
+
+    // Find items that match the informer_id stored in custom data (Qt::UserRole)
+    QList<QListWidgetItem *> items;
+    for (int i = 0; i < ui.QInformerList->count(); ++i) {
+        QListWidgetItem *item = ui.QInformerList->item(i);
+        if (item->data(Qt::UserRole).toString() == QInformerID) {
+            items.append(item);
+        }
+    }
+
+    // Prevent clicking interaction with the item before removal
     for (QListWidgetItem *item : items) {
-        delete ui.QInformerList->takeItem(ui.QInformerList->row(item));
+        // Ensure the item is not currently selected or clicked
+        if (item == currentClickedItem) {
+            currentClickedItem = nullptr;  // Reset the clicked item
+        }
+
+        // Now safely delete the item
+        delete item;  // This deletes the item and removes it from the list
     }
 
     // Remove the informer ID from the tracking list
     informersList.removeOne(QInformerID);
+
+    // Clear the system information area and reset to default state
+    clearSystemInfoArea();
+}
+
+void MainWindow::clearSystemInfoArea() {
+    // Clear system information widget only if one is currently being shown
+    QWidget *currentWidget = ui.QInformerSystemInfo->currentWidget();
+    if (currentWidget) {
+        ui.QInformerSystemInfo->removeWidget(currentWidget);
+        currentWidget->deleteLater();  // Avoid direct delete, use deleteLater() for safe removal
+    }
+
+    // Create a default widget with a label to show when no informer is selected
+    QWidget *defaultWidget = new QWidget();
+    QVBoxLayout *defaultLayout = new QVBoxLayout(defaultWidget);
+    QLabel *label = new QLabel("Select an informer to view system information.");
+    defaultLayout->addWidget(label);
+
+    defaultWidget->setLayout(defaultLayout);
+
+    // Add the default widget and set it as the current widget in the QStackedWidget
+    ui.QInformerSystemInfo->addWidget(defaultWidget);
+    ui.QInformerSystemInfo->setCurrentWidget(defaultWidget);
 }
 
 void MainWindow::onDisconnectClicked() {

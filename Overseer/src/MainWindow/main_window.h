@@ -29,6 +29,7 @@ private slots:
     void handleInformerDisconnected(const std::string informer_id);
     void onInformerClicked(QListWidgetItem *item);
     void onDisconnectClicked();
+    void clearSystemInfoArea();
 };
 
 #endif
