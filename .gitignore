@@ -51,3 +51,4 @@ build/
 compile_commands.json
 
 bin/
+.vscode/
