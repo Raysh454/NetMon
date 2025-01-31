@@ -7,20 +7,19 @@
 #include <string>
 #include <sstream>
 #include <chrono>
-#include <thread>
 #include <sys/statvfs.h>
 #include <unistd.h>
 #include <mntent.h>
-#include <vector>
 
 struct SystemInformation {
-    float cpu;
+    std::string cpu_model;
+    float cpu_usage;
     float memory;
     float disk_gb;
     float network_download_mbs;
     float network_upload_mbs;
     
-    SystemInformation() : cpu(0), memory(0), disk_gb(0), 
+    SystemInformation() : cpu_usage(0), memory(0), disk_gb(0), 
                          network_download_mbs(0), network_upload_mbs(0) {}
 };
 
@@ -181,7 +180,8 @@ public:
 
     int get_information(SystemInformation& info) {
         try {
-            info.cpu = get_cpu_usage();
+            info.cpu_model = get_cpu_model();
+            info.cpu_usage = get_cpu_usage();
             info.memory = get_memory_usage();
             info.disk_gb = get_disk_usage();
             get_network_usage(info.network_download_mbs, info.network_upload_mbs);
@@ -191,22 +191,22 @@ public:
             return 1;
         }
     }
+    std::string get_cpu_model() {
+        std::ifstream cpuinfo("/proc/cpuinfo");
+        std::string line;
+        
+        if (!cpuinfo.is_open()) {
+            return "Unable to open /proc/cpuinfo";
+        }
+
+        while (std::getline(cpuinfo, line)) {
+            if (line.find("model name") != std::string::npos) {
+                return line.substr(line.find(":") + 2);  // Extract value after ': '
+            }
+        }
+
+        return "CPU model name not found";
+    }
 };
 
 #endif
-
-// int main() {
-//     InformationGrabber grabber;
-//     SystemInformation info;
-//     while(true) {
-//         if (grabber.get_information(info) == 0) {
-//             std::cout << "CPU: " << info.cpu << "%" << std::endl;
-//             std::cout << "Memory: " << info.memory << "%" << std::endl;
-//             std::cout << "Disk: " << info.disk_gb << " GB" << std::endl;
-//             std::cout << "Network Download: " << info.network_download_mbs << " MB/s" << std::endl;
-//             std::cout << "Network Upload: " << info.network_upload_mbs << " MB/s" << std::endl;
-//         }
-//         std::this_thread::sleep_for(std::chrono::seconds(1));
-//     }
-//     return 0;
-// }

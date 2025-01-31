@@ -68,7 +68,7 @@ private:
         memcpy(buffer + 33, platform.c_str(), std::min(platform.size(), size_t(16)));
 
         // Fill CPU model (32 bytes)
-        std::string cpu = "CPU Model"; // In production, get from /proc/cpuinfo
+        std::string cpu = info_grabber.get_cpu_model().substr(0,32); // In production, get from /proc/cpuinfo
         memcpy(buffer + 49, cpu.c_str(), std::min(cpu.size(), size_t(32)));
 
         // Fill cores (1 byte)
@@ -146,7 +146,7 @@ private:
                 memcpy(buffer + 1, informer_id.c_str(), 32);
 
                 // Convert values to network byte order and copy
-                uint64_t cpu = htonll((uint64_t)(sys_info.cpu * 100));  // Convert percentage to fixed point
+                uint64_t cpu = htonll((uint64_t)(sys_info.cpu_usage * 100));  // Convert percentage to fixed point
                 uint64_t mem = htonll((uint64_t)(sys_info.memory * 100));  // Convert percentage to fixed point
                 uint64_t net_down = htonll((uint64_t)(sys_info.network_download_mbs * 100));
                 uint64_t net_up = htonll((uint64_t)(sys_info.network_upload_mbs * 100));
